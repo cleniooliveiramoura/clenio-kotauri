@@ -11,7 +11,7 @@ Cliente desktop leve para Telegram e shell PWA para celular. No desktop, **Tauri
   ·
   <a href="https://clenio77.github.io/clenio-kotauri/"><strong>PWA (GitHub Pages)</strong></a>
   ·
-  Versão <strong>0.1.3</strong>
+  Versão <strong>0.1.4</strong>
 </p>
 
 ---
@@ -113,6 +113,16 @@ Há também injeção de barra lateral de pastas estilo Kotatogram e outros ajus
 | **Microfone / voz** | WebKit: `set_enable_media_stream(true)`, `set_enable_mediasource(true)`, `permission_request` permitido |
 | **Downloads** | `on_download` grava na pasta Downloads do sistema; nomes sanitizados e únicos se já existirem (`downloads.rs`) |
 
+### Stories nativas (desktop)
+
+Publicação via **MTProto** (`grammers-client`), sessão separada do Web K:
+
+- Botão flutuante **Stories** na WebView + seção no Settings
+- Login com telefone/código (2FA suportado)
+- Credenciais: `KOTAURI_TG_API_ID` / `KOTAURI_TG_API_HASH` ou `~/.config/kotauri/telegram_api.json`
+- Sessão: `~/.config/kotauri/stories.session`
+- MVP: foto/vídeo, legenda, privacidade (contatos / todos / amigos próximos)
+
 > A bridge de imagem PNG via GTK está implementada para **Linux**. Em outros SO o stub devolve `None` até haver backend equivalente.
 
 ### Bandeja e janela
@@ -179,7 +189,7 @@ O PWA **não** embute o Telegram numa WebView nativa no celular: ele lança o We
 | Testes | Puppeteer + `node:test`, `cargo test`, Clippy |
 | CI / Pages | GitHub Actions (`ci.yml`, `pages.yml`) |
 
-Versão alinhada em `package.json`, `src-tauri/Cargo.toml` e `src-tauri/tauri.conf.json`: **0.1.3**.
+Versão alinhada em `package.json`, `src-tauri/Cargo.toml` e `src-tauri/tauri.conf.json`: **0.1.4**.
 
 Identificador do app: `com.kotauri.app`. Binário/pacote desktop: **kotauri** (`/usr/bin/kotauri` no `.deb`).
 
@@ -238,7 +248,7 @@ Variáveis úteis:
 2. Instale (exemplo Debian/Ubuntu):
 
 ```bash
-sudo apt install ./kotauri_0.1.3_amd64.deb
+sudo apt install ./kotauri_0.1.4_amd64.deb
 # ou: sudo dpkg -i kotauri_*.deb && sudo apt-get install -f
 ```
 
@@ -248,6 +258,7 @@ Releases recentes relevantes:
 
 | Versão | Destaque |
 |--------|----------|
+| **0.1.4** | Publicação nativa de Stories (MTProto + composer no Settings) |
 | **0.1.3** | Engrenagem ⚙, settings honestos (sem toggles mortos), downloads nativos |
 | **0.1.2** | Colar imagem via bridge GTK |
 | **0.1.1** | Clipboard texto + media stream + suíte Puppeteer |
@@ -331,7 +342,7 @@ Há também testes unitários Rust em módulos como `downloads`, `clipboard_imag
 │   ├── App.tsx                 # Tauri → SettingsPanel; web → WebShell
 │   ├── main.tsx
 │   ├── components/
-│   │   ├── SettingsPanel.tsx   # UI de preferências (desktop)
+│   │   ├── StoriesPanel.tsx    # Login + composer Stories (MTProto)
 │   │   └── WebShell.tsx        # Shell PWA (install, auto-open)
 │   └── styles/
 │       ├── global.css
@@ -341,6 +352,7 @@ Há também testes unitários Rust em módulos como `downloads`, `clipboard_imag
 │   ├── src/
 │   │   ├── lib.rs              # janela main, navigation bridge, setup
 │   │   ├── settings.rs         # JSON + geração CSS/JS
+│   │   ├── stories/            # MTProto: auth, upload, sendStory
 │   │   ├── clipboard_image.rs  # GTK → PNG → inject
 │   │   ├── downloads.rs        # on_download → pasta Downloads
 │   │   ├── ui_chrome.rs        # botão ⚙ flutuante
@@ -367,6 +379,7 @@ A pasta `_reference/` (se existir localmente) está no `.gitignore` — material
 ## Limitações conscientes
 
 - Personalização profunda (temas, compacto, etc.) aplica-se ao **desktop** via injeção; o PWA é um shell de entrada.
+- **Stories:** login MTProto separado do Web K; requer `api_id`/`api_hash`; sem editor avançado (stickers, música, etc.) no MVP.
 - Colar imagem nativa do sistema via GTK: **Linux**.
 - O Telegram Web K pode mudar seletores/DOM; `web_selectors.rs` e avisos de compat existem para isso.
 - AppImage e builds multiplataforma precisam de ambiente/alvo adequado; o foco de empacotamento validado no dia a dia é o `.deb` Linux.

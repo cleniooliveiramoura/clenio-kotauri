@@ -14,6 +14,19 @@ export const DEFAULT_SETTINGS = {
   forward_retain_selection: false,
   minimize_to_tray: true,
   start_minimized: false,
+  stories_enabled: true,
+};
+
+export const DEFAULT_STORIES_STATUS = {
+  storiesEnabled: true,
+  hasApiCredentials: false,
+  connected: false,
+  username: null,
+  displayName: null,
+  pendingCode: false,
+  pendingPassword: false,
+  passwordHint: null,
+  storiesRemaining: null,
 };
 
 export const APP_ORIGIN = process.env.KOTAURI_E2E_ORIGIN || "http://127.0.0.1:4173";

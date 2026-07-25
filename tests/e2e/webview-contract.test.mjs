@@ -32,8 +32,17 @@ describe("contrato WebView (KoTauri / Telegram Web K)", () => {
 
   it("injeta botão de Settings e trata downloads nativos", () => {
     assert.match(libRs, /ui_chrome::settings_gear_js/);
+    assert.match(libRs, /ui_chrome::stories_button_js/);
     assert.match(libRs, /on_download\(crate::downloads::on_download\)/);
     assert.match(libRs, /hide_settings/);
+  });
+
+  it("registra comandos Stories MTProto", () => {
+    assert.match(libRs, /stories_status/);
+    assert.match(libRs, /stories_publish/);
+    assert.match(libRs, /stories_pick_media/);
+    assert.match(libRs, /StoriesManager::new/);
+    assert.match(libRs, /kotauri\.internal\/open-stories/);
   });
 
   it("permite permission_request no WebKit", () => {

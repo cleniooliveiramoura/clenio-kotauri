@@ -97,6 +97,30 @@ describe("settings panel (mock Tauri)", () => {
     assert.match(text, /Downloads do Telegram/);
   });
 
+  it("renderiza seção Stories com login e composer mock", async () => {
+    const section = await page.waitForSelector('[data-testid="stories-section"]');
+    assert.ok(section);
+    const hint = await page.$eval('[data-testid="stories-hint"]', (el) => el.textContent || "");
+    assert.match(hint, /Login separado/i);
+
+    await page.type('[data-testid="stories-api-id"]', "12345");
+    await page.type('[data-testid="stories-api-hash"]', "abc123");
+    await page.click('[data-testid="stories-save-api"]');
+    await page.waitForSelector('[data-testid="stories-login-form"]');
+
+    await page.type('[data-testid="stories-phone"]', "+5511999999999");
+    await page.click('[data-testid="stories-start-login"]');
+    await page.waitForSelector('[data-testid="stories-code-form"]');
+
+    await page.type('[data-testid="stories-code"]', "12345");
+    await page.click('[data-testid="stories-confirm-login"]');
+    await page.waitForSelector('[data-testid="stories-composer"]');
+
+    await page.click('[data-testid="stories-pick-media"]');
+    await page.click('[data-testid="stories-publish"]');
+    await page.waitForSelector('[data-testid="stories-success"]');
+  });
+
   it("fecha settings via hide_settings", async () => {
     await page.click('[data-testid="settings-close"]');
     await page.waitForFunction(() => window.__kotauriTest?.hidden === true, {

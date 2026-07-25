@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import "../styles/settings.css";
+import StoriesPanel from "./StoriesPanel";
 
 interface Settings {
   custom_font: string;
@@ -12,6 +13,7 @@ interface Settings {
   show_chat_id: boolean;
   minimize_to_tray: boolean;
   start_minimized: boolean;
+  stories_enabled: boolean;
 }
 
 interface SettingsPanelProps {
@@ -28,12 +30,21 @@ const THEMES = [
 
 export default function SettingsPanel({ onClose, onSettingsChange }: SettingsPanelProps) {
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [storiesFocusToken, setStoriesFocusToken] = useState(0);
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     loadSettings();
+    const onOpenSection = (event: Event) => {
+      const detail = (event as CustomEvent<string>).detail;
+      if (detail === "stories") {
+        setStoriesFocusToken((n) => n + 1);
+      }
+    };
+    window.addEventListener("kotauri-open-section", onOpenSection);
+    return () => window.removeEventListener("kotauri-open-section", onOpenSection);
   }, []);
 
   async function loadSettings() {
@@ -130,6 +141,12 @@ export default function SettingsPanel({ onClose, onSettingsChange }: SettingsPan
         )}
 
         <div className="settings-content">
+          <StoriesPanel
+            storiesEnabled={settings.stories_enabled ?? true}
+            onToggleEnabled={(enabled) => updateSetting("stories_enabled", String(enabled))}
+            focusToken={storiesFocusToken}
+          />
+
           <section className="settings-section">
             <h3>Aparência</h3>
 
@@ -242,7 +259,7 @@ export default function SettingsPanel({ onClose, onSettingsChange }: SettingsPan
         </div>
 
         <div className="settings-footer">
-          <span className="version">KoTauri v0.1.3</span>
+          <span className="version">KoTauri v0.1.4</span>
         </div>
       </div>
     </div>

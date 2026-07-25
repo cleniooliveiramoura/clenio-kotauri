@@ -11,6 +11,7 @@ use crate::settings::AppSettings;
 pub mod clipboard_image;
 pub mod downloads;
 pub mod settings;
+pub mod stories;
 pub mod ui_chrome;
 pub mod web_selectors;
 
@@ -19,7 +20,7 @@ const INITIAL_INJECTION_DELAY_MS: u64 = 400;
 const INJECTION_INTERVAL_MS: u64 = 750;
 const INJECTION_ATTEMPTS: u32 = 22;
 
-fn show_settings_window(app: &tauri::AppHandle) -> Result<(), String> {
+fn show_settings_window(app: &tauri::AppHandle, section: Option<&str>) -> Result<(), String> {
     let window = app
         .get_webview_window("settings")
         .ok_or_else(|| "janela de configurações não encontrada".to_string())?;
@@ -32,14 +33,22 @@ fn show_settings_window(app: &tauri::AppHandle) -> Result<(), String> {
     window
         .eval(format!("window.initialSettings = {json};"))
         .map_err(|e| e.to_string())?;
+    if let Some(section) = section {
+        window
+            .eval(format!(
+                "window.dispatchEvent(new CustomEvent('kotauri-open-section', {{ detail: {:?} }}));",
+                section
+            ))
+            .map_err(|e| e.to_string())?;
+    }
     window.show().map_err(|e| e.to_string())?;
     window.set_focus().map_err(|e| e.to_string())?;
     Ok(())
 }
 
 #[tauri::command]
-fn open_settings(app: tauri::AppHandle) -> Result<(), String> {
-    show_settings_window(&app)
+fn open_settings(app: tauri::AppHandle, section: Option<String>) -> Result<(), String> {
+    show_settings_window(&app, section.as_deref())
 }
 
 #[tauri::command]
@@ -100,11 +109,20 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .manage(app_settings)
+        .manage(crate::stories::StoriesManager::new())
         .invoke_handler(tauri::generate_handler![
             open_settings,
             hide_settings,
             get_settings,
-            update_setting
+            update_setting,
+            crate::stories::commands::stories_status,
+            crate::stories::commands::stories_save_api_credentials,
+            crate::stories::commands::stories_start_login,
+            crate::stories::commands::stories_confirm_login,
+            crate::stories::commands::stories_confirm_password,
+            crate::stories::commands::stories_logout,
+            crate::stories::commands::stories_pick_media,
+            crate::stories::commands::stories_publish,
         ])
         .setup(move |app| {
             if let Some(settings_win) = app.get_webview_window("settings") {
@@ -138,6 +156,13 @@ pub fn run() {
                         f.src = 'https://kotauri.internal/open-settings';
                         document.body.appendChild(f);
                         setTimeout(() => f.remove(), 500);
+                    },
+                    openStories: () => {
+                        let f = document.createElement('iframe');
+                        f.style.display = 'none';
+                        f.src = 'https://kotauri.internal/open-stories';
+                        document.body.appendChild(f);
+                        setTimeout(() => f.remove(), 500);
                     }
                 };
             ",
@@ -146,6 +171,10 @@ pub fn run() {
                 let href = url.as_str();
                 if href.contains("kotauri.internal/open-settings") {
                     let _ = app_handle_ipc.emit("open-settings", ());
+                    return false;
+                }
+                if href.contains("kotauri.internal/open-stories") {
+                    let _ = app_handle_ipc.emit("open-stories", ());
                     return false;
                 }
                 if href.contains("kotauri.internal/clipboard-image") {
@@ -231,7 +260,12 @@ pub fn run() {
 
             let app_handle_for_open = app.handle().clone();
             app.listen("open-settings", move |_| {
-                let _ = show_settings_window(&app_handle_for_open);
+                let _ = show_settings_window(&app_handle_for_open, None);
+            });
+
+            let app_handle_for_stories = app.handle().clone();
+            app.listen("open-stories", move |_| {
+                let _ = show_settings_window(&app_handle_for_stories, Some("stories"));
             });
 
             let quit_i = MenuItem::with_id(app, "quit", "Sair", true, None::<&str>)?;
@@ -255,7 +289,7 @@ pub fn run() {
                             }
                         }
                         "settings_menu" => {
-                            let _ = show_settings_window(app.app_handle());
+                            let _ = show_settings_window(app.app_handle(), None);
                         }
                         _ => {}
                     }
@@ -310,6 +344,9 @@ fn inject_to_main(app: &tauri::AppHandle) {
         // Botão ⚙ de configurações (idempotente).
         if let Err(e) = window.eval(crate::ui_chrome::settings_gear_js()) {
             eprintln!("[KoTauri] falha ao instalar settings gear: {e}");
+        }
+        if let Err(e) = window.eval(crate::ui_chrome::stories_button_js()) {
+            eprintln!("[KoTauri] falha ao instalar stories button: {e}");
         }
     } else {
         println!("[KoTauri] janela 'main' não encontrada.");

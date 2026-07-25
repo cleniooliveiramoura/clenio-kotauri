@@ -41,8 +41,16 @@ pub struct SettingsData {
     pub minimize_to_tray: bool,
     pub start_minimized: bool,
 
+    // Stories (MTProto nativo)
+    #[serde(default = "default_stories_enabled")]
+    pub stories_enabled: bool,
+
     // Custom text replaces
     pub text_replaces: Vec<(String, String)>,
+}
+
+fn default_stories_enabled() -> bool {
+    true
 }
 
 impl Default for SettingsData {
@@ -62,6 +70,7 @@ impl Default for SettingsData {
             forward_retain_selection: false,
             minimize_to_tray: true,
             start_minimized: false,
+            stories_enabled: true,
             text_replaces: vec![],
         }
     }
@@ -120,6 +129,7 @@ impl AppSettings {
                 "forward_retain_selection" => data.forward_retain_selection = value == "true",
                 "minimize_to_tray" => data.minimize_to_tray = value == "true",
                 "start_minimized" => data.start_minimized = value == "true",
+                "stories_enabled" => data.stories_enabled = value == "true",
                 _ => {}
             }
         }
@@ -247,6 +257,10 @@ impl AppSettings {
                     --message-in-background-color: #181818 !important;
                 }
             ");
+        }
+
+        if !data.stories_enabled {
+            css.push_str("#kotauri-stories-btn { display: none !important; }");
         }
 
         // Kotatogram Layout (Preencher melhor o espaço da tela)
