@@ -216,7 +216,7 @@ Documentação oficial de pré-requisitos por SO: [Tauri v2](https://v2.tauri.ap
 ## Desenvolvimento
 
 ```bash
-git clone https://github.com/clenio77/clenio-kotauri.git
+git clone https://github.com/cleniooliveiramoura/clenio-kotauri.git
 cd clenio-kotauri   # ou clenio-katotagram, conforme o clone local
 npm install
 npm run tauri dev
@@ -399,6 +399,6 @@ Licença do repositório: **MIT** (`package.json`).
 
 **Clenio** — também em `authors` de `src-tauri/Cargo.toml`.
 
-- Repositório: [github.com/clenio77/clenio-kotauri](https://github.com/clenio77/clenio-kotauri)
+- Repositório: [github.com/cleniooliveiramoura/clenio-kotauri](https://github.com/cleniooliveiramoura/clenio-kotauri)
 - Releases: [github.com/clenio77/clenio-kotauri/releases](https://github.com/clenio77/clenio-kotauri/releases)
 - PWA: [clenio77.github.io/clenio-kotauri](https://clenio77.github.io/clenio-kotauri/)
